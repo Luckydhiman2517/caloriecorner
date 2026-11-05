@@ -1,0 +1,45 @@
+{
+  "migIndex": 1,
+  "data": [
+    {
+      "path": "src/assets/fonts/Inter-Bold.ttf",
+      "sha1": "5a912e0600350ef7bb9c7c2e6c585815bb30ca16"
+    },
+    {
+      "path": "src/assets/fonts/Inter-Medium.ttf",
+      "sha1": "a961cb10310cf86b23bfbe21a637614d1046d795"
+    },
+    {
+      "path": "src/assets/fonts/Inter-Regular.ttf",
+      "sha1": "7a3fa76705ad586f6410a1b5b0059dd17db20c26"
+    },
+    {
+      "path": "src/assets/fonts/Inter-SemiBold.ttf",
+      "sha1": "863e1483cb0cad642b80fc840072596afd5ff144"
+    },
+    {
+      "path": "src/assets/fonts/JetBrainsMono-Medium.ttf",
+      "sha1": "e71dac67729fb110d7fc7e4a457ad19fcd921d2b"
+    },
+    {
+      "path": "src/assets/fonts/JetBrainsMono-SemiBold.ttf",
+      "sha1": "c575ac3e7a32faee1a201ff4baf05596906ff3b2"
+    },
+    {
+      "path": "src/assets/fonts/SchibstedGrotesk-Bold.ttf",
+      "sha1": "ca567e6350e3a8d9959512a781b4f3d3e15930a7"
+    },
+    {
+      "path": "src/assets/fonts/SchibstedGrotesk-ExtraBold.ttf",
+      "sha1": "a7498fe31a0d801ddfd6f56d32e834a3da74ce7b"
+    },
+    {
+      "path": "src/assets/fonts/SchibstedGrotesk-Medium.ttf",
+      "sha1": "3eac3d475b8c24bf9a4d0b3315abfb93da00a59f"
+    },
+    {
+      "path": "src/assets/fonts/SchibstedGrotesk-SemiBold.ttf",
+      "sha1": "9a1247c60059487c1db8364eb58f572055fccc6a"
+    }
+  ]
+}

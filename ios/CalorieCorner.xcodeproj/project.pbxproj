@@ -9,10 +9,20 @@
 /* Begin PBXBuildFile section */
 		0C80B921A6F3F58F76C31292 /* libPods-CalorieCorner.a in Frameworks */ = {isa = PBXBuildFile; fileRef = 5DCACB8F33CDC322A6C60F78 /* libPods-CalorieCorner.a */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
+		15999DB54A3947D1AA1C8277 /* JetBrainsMono-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 3034E041E9084AD6833BEEF3 /* JetBrainsMono-Medium.ttf */; };
+		2362F987448746F09419C8EB /* SchibstedGrotesk-ExtraBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 4090A0BF6B18420C823F71A2 /* SchibstedGrotesk-ExtraBold.ttf */; };
+		4ADAB15A3F734D57969AEBD0 /* Inter-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = F88A1D75AFD3468FA262BC1B /* Inter-SemiBold.ttf */; };
+		50101DBFE25C46A4A3882D06 /* SchibstedGrotesk-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 52ADB94C9D9F4A26A22AECA9 /* SchibstedGrotesk-SemiBold.ttf */; };
 		761780ED2CA45674006654EE /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EC2CA45674006654EE /* AppDelegate.swift */; };
 		761780EF2CA45674006654EF /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 761780EE2CA45674006654EF /* SceneDelegate.swift */; };
 		81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */; };
+		90F63E8C20C44869A3207771 /* SchibstedGrotesk-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 66672D32EA71446598DC5E09 /* SchibstedGrotesk-Bold.ttf */; };
+		92A052F205194448BCA54343 /* Inter-Regular.ttf in Resources */ = {isa = PBXBuildFile; fileRef = AC82801C614B4A83900544B4 /* Inter-Regular.ttf */; };
+		B755FE34E99D4F90B858E7D9 /* Inter-Bold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = ACAFFA72D87A4467A4D90AB0 /* Inter-Bold.ttf */; };
 		C75BA5DB30DCA1D4C868017B /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */; };
+		E8CDAB7C22F948B1A479DC9D /* SchibstedGrotesk-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 9073A269D33046218902B274 /* SchibstedGrotesk-Medium.ttf */; };
+		F3EE5F98EFDD491E94AD7B99 /* JetBrainsMono-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = BE680E88803041A9A4145B32 /* JetBrainsMono-SemiBold.ttf */; };
+		F4AF2C1C5C3E482EB08D6367 /* Inter-Medium.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 64E6012D9B384F5A9EA5CAA7 /* Inter-Medium.ttf */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -20,13 +30,23 @@
 		13B07FB51A68108700A75B9A /* Images.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; name = Images.xcassets; path = CalorieCorner/Images.xcassets; sourceTree = "<group>"; };
 		13B07FB61A68108700A75B9A /* Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = Info.plist; path = CalorieCorner/Info.plist; sourceTree = "<group>"; };
 		13B07FB81A68108700A75B9A /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = PrivacyInfo.xcprivacy; path = CalorieCorner/PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		3034E041E9084AD6833BEEF3 /* JetBrainsMono-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "JetBrainsMono-Medium.ttf"; path = "../src/assets/fonts/JetBrainsMono-Medium.ttf"; sourceTree = "<group>"; };
 		3B4392A12AC88292D35C810B /* Pods-CalorieCorner.debug.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CalorieCorner.debug.xcconfig"; path = "Target Support Files/Pods-CalorieCorner/Pods-CalorieCorner.debug.xcconfig"; sourceTree = "<group>"; };
+		4090A0BF6B18420C823F71A2 /* SchibstedGrotesk-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "SchibstedGrotesk-ExtraBold.ttf"; path = "../src/assets/fonts/SchibstedGrotesk-ExtraBold.ttf"; sourceTree = "<group>"; };
+		52ADB94C9D9F4A26A22AECA9 /* SchibstedGrotesk-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "SchibstedGrotesk-SemiBold.ttf"; path = "../src/assets/fonts/SchibstedGrotesk-SemiBold.ttf"; sourceTree = "<group>"; };
 		5709B34CF0A7D63546082F79 /* Pods-CalorieCorner.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-CalorieCorner.release.xcconfig"; path = "Target Support Files/Pods-CalorieCorner/Pods-CalorieCorner.release.xcconfig"; sourceTree = "<group>"; };
 		5DCACB8F33CDC322A6C60F78 /* libPods-CalorieCorner.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; includeInIndex = 0; path = "libPods-CalorieCorner.a"; sourceTree = BUILT_PRODUCTS_DIR; };
+		64E6012D9B384F5A9EA5CAA7 /* Inter-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Medium.ttf"; path = "../src/assets/fonts/Inter-Medium.ttf"; sourceTree = "<group>"; };
+		66672D32EA71446598DC5E09 /* SchibstedGrotesk-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "SchibstedGrotesk-Bold.ttf"; path = "../src/assets/fonts/SchibstedGrotesk-Bold.ttf"; sourceTree = "<group>"; };
 		761780EC2CA45674006654EE /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = AppDelegate.swift; path = CalorieCorner/AppDelegate.swift; sourceTree = "<group>"; };
 		761780EE2CA45674006654EF /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SceneDelegate.swift; path = CalorieCorner/SceneDelegate.swift; sourceTree = "<group>"; };
 		81AB9BB72411601600AC10FF /* LaunchScreen.storyboard */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.storyboard; name = LaunchScreen.storyboard; path = CalorieCorner/LaunchScreen.storyboard; sourceTree = "<group>"; };
+		9073A269D33046218902B274 /* SchibstedGrotesk-Medium.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "SchibstedGrotesk-Medium.ttf"; path = "../src/assets/fonts/SchibstedGrotesk-Medium.ttf"; sourceTree = "<group>"; };
+		AC82801C614B4A83900544B4 /* Inter-Regular.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Regular.ttf"; path = "../src/assets/fonts/Inter-Regular.ttf"; sourceTree = "<group>"; };
+		ACAFFA72D87A4467A4D90AB0 /* Inter-Bold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-Bold.ttf"; path = "../src/assets/fonts/Inter-Bold.ttf"; sourceTree = "<group>"; };
+		BE680E88803041A9A4145B32 /* JetBrainsMono-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "JetBrainsMono-SemiBold.ttf"; path = "../src/assets/fonts/JetBrainsMono-SemiBold.ttf"; sourceTree = "<group>"; };
 		ED297162215061F000B7C4FE /* JavaScriptCore.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = JavaScriptCore.framework; path = System/Library/Frameworks/JavaScriptCore.framework; sourceTree = SDKROOT; };
+		F88A1D75AFD3468FA262BC1B /* Inter-SemiBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = undefined; includeInIndex = 0; lastKnownFileType = unknown; name = "Inter-SemiBold.ttf"; path = "../src/assets/fonts/Inter-SemiBold.ttf"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -78,6 +98,7 @@
 				83CBBA001A601CBA00E9B192 /* Products */,
 				2D16E6871FA4F8E400B85C8A /* Frameworks */,
 				BBD78D7AC51CEA395F1C20DB /* Pods */,
+				C08570D459984C8EA41C3949 /* Resources */,
 			);
 			indentWidth = 2;
 			sourceTree = "<group>";
@@ -99,6 +120,24 @@
 				5709B34CF0A7D63546082F79 /* Pods-CalorieCorner.release.xcconfig */,
 			);
 			path = Pods;
+			sourceTree = "<group>";
+		};
+		C08570D459984C8EA41C3949 /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				64E6012D9B384F5A9EA5CAA7 /* Inter-Medium.ttf */,
+				52ADB94C9D9F4A26A22AECA9 /* SchibstedGrotesk-SemiBold.ttf */,
+				ACAFFA72D87A4467A4D90AB0 /* Inter-Bold.ttf */,
+				AC82801C614B4A83900544B4 /* Inter-Regular.ttf */,
+				4090A0BF6B18420C823F71A2 /* SchibstedGrotesk-ExtraBold.ttf */,
+				BE680E88803041A9A4145B32 /* JetBrainsMono-SemiBold.ttf */,
+				66672D32EA71446598DC5E09 /* SchibstedGrotesk-Bold.ttf */,
+				3034E041E9084AD6833BEEF3 /* JetBrainsMono-Medium.ttf */,
+				F88A1D75AFD3468FA262BC1B /* Inter-SemiBold.ttf */,
+				9073A269D33046218902B274 /* SchibstedGrotesk-Medium.ttf */,
+			);
+			name = Resources;
+			path = "";
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -164,6 +203,16 @@
 				81AB9BB82411601600AC10FF /* LaunchScreen.storyboard in Resources */,
 				13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */,
 				C75BA5DB30DCA1D4C868017B /* PrivacyInfo.xcprivacy in Resources */,
+				F4AF2C1C5C3E482EB08D6367 /* Inter-Medium.ttf in Resources */,
+				50101DBFE25C46A4A3882D06 /* SchibstedGrotesk-SemiBold.ttf in Resources */,
+				B755FE34E99D4F90B858E7D9 /* Inter-Bold.ttf in Resources */,
+				92A052F205194448BCA54343 /* Inter-Regular.ttf in Resources */,
+				2362F987448746F09419C8EB /* SchibstedGrotesk-ExtraBold.ttf in Resources */,
+				F3EE5F98EFDD491E94AD7B99 /* JetBrainsMono-SemiBold.ttf in Resources */,
+				90F63E8C20C44869A3207771 /* SchibstedGrotesk-Bold.ttf in Resources */,
+				15999DB54A3947D1AA1C8277 /* JetBrainsMono-Medium.ttf in Resources */,
+				4ADAB15A3F734D57969AEBD0 /* Inter-SemiBold.ttf in Resources */,
+				E8CDAB7C22F948B1A479DC9D /* SchibstedGrotesk-Medium.ttf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
