@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Adaptive icon background: the Forest Ink tile with its Turmeric quarter-disc.
+  Viewport units: the brand mark's 40-unit tile sits at 10..50 of 60, so it
+  fills the 72 dp area Android masks (circle, squircle, rounded square).
+  Keep in sync with scripts/generate-app-icons.swift.
+-->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="60"
+    android:viewportHeight="60">
+    <path
+        android:fillColor="#17231C"
+        android:pathData="M0,0h60v60h-60z" />
+    <path
+        android:fillColor="#E3A63A"
+        android:pathData="M33,50a17,17 0,1 0,34 0a17,17 0,1 0,-34 0z" />
+</vector>
