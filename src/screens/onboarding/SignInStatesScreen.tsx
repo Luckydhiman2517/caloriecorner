@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react';
-import { StyleSheet, TextInput, View } from 'react-native';
+import { Platform, StyleSheet, TextInput, View } from 'react-native';
 import Svg, { Circle, Path } from 'react-native-svg';
 import {
   Button,
@@ -304,6 +304,9 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     backgroundColor: 'transparent',
     color: 'transparent',
+    // Android ignores a transparent text colour on inputs, so hide the whole
+    // field there (it still takes taps). iOS stops hit-testing at opacity 0.
+    opacity: Platform.OS === 'android' ? 0 : 1,
     ...ff('body', 400),
     fontSize: 16,
   },
