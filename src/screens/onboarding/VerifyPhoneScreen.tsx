@@ -10,14 +10,20 @@ import {
   Tap,
   Text,
 } from '../../components';
-import { useNav } from '../../navigation/types';
+import { useNav, useParams } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { type } from '../../theme/type';
+import { formatMobile } from '../../utils/validation';
 
 /** 1.4 Verify code · phone — design file: Onboard-OTP.dc.html */
 export default function VerifyPhoneScreen() {
   const nav = useNav();
+  const params = useParams<'VerifyPhone'>();
+  // Opened from the screens index there is no number, so show the drawn one.
+  const sentTo = params
+    ? `+91 ${formatMobile(params.phone)}`
+    : '+91 98XXX XX210';
   const [code, setCode] = useState('482719');
 
   return (
@@ -28,7 +34,7 @@ export default function VerifyPhoneScreen() {
         </Text>
         <View style={styles.sent}>
           <Text style={[type.body, styles.sentText]}>
-            Sent to <Span style={styles.sentTo}>+91 98XXX XX210</Span> ·
+            Sent to <Span style={styles.sentTo}>{sentTo}</Span> ·
           </Text>
           <Tap
             accessibilityRole="link"

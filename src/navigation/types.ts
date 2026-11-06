@@ -1,4 +1,8 @@
-import { useNavigation } from '@react-navigation/native';
+import {
+  useNavigation,
+  useRoute,
+  type RouteProp,
+} from '@react-navigation/native';
 import type { NativeStackNavigationProp } from '@react-navigation/native-stack';
 
 /**
@@ -9,8 +13,8 @@ export type RootStackParamList = {
   Welcome: undefined; // Onboard-Welcome
   Login: undefined; // Onboard-Login
   EmailSignIn: undefined; // Onboard-Email
-  VerifyPhone: undefined; // Onboard-OTP
-  VerifyEmail: undefined; // Onboard-OTPEmail
+  VerifyPhone: { phone: string } | undefined; // Onboard-OTP (10 national digits)
+  VerifyEmail: { email: string } | undefined; // Onboard-OTPEmail
   Location: undefined; // Onboard-Location
   LocationConfirm: undefined; // Onboard-LocationConfirm
   PickGoal: undefined; // Onboard-Goal
@@ -43,3 +47,7 @@ export type Nav = NativeStackNavigationProp<RootStackParamList>;
 
 /** Typed navigation hook: `const nav = useNav(); nav.navigate('Cart')`. */
 export const useNav = () => useNavigation<Nav>();
+
+/** Typed route params: `const params = useParams<'VerifyPhone'>()`. */
+export const useParams = <R extends RouteName>() =>
+  useRoute<RouteProp<RootStackParamList, R>>().params;

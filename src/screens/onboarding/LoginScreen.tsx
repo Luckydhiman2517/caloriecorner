@@ -18,13 +18,29 @@ import { useNav } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { type } from '../../theme/type';
+import {
+  formatMobile,
+  mobileError,
+  normalizeMobile,
+} from '../../utils/validation';
 
 /** 1.2 Log in or sign up — design file: Onboard-Login.dc.html */
 export default function LoginScreen() {
   const nav = useNav();
   const insets = useSafeAreaInsets();
-  const [phone, setPhone] = useState('98XXX XX210');
+  /** National digits only; shown grouped as "98765 43210". */
+  const [digits, setDigits] = useState('');
+  /** Errors show after the field is left or Get OTP is tapped, then live. */
+  const [touched, setTouched] = useState(false);
+  const error = touched && digits ? mobileError(digits) : null;
   const toLocation = () => nav.navigate('Location');
+
+  const getOtp = () => {
+    setTouched(true);
+    if (!mobileError(digits)) {
+      nav.navigate('VerifyPhone', { phone: digits });
+    }
+  };
 
   return (
     <Screen
@@ -38,7 +54,8 @@ export default function LoginScreen() {
       }
       footer={
         <Text style={[styles.legal, { paddingBottom: 24 + insets.bottom }]}>
-          By continuing you agree to our <Span style={styles.legalLink}>Terms</Span>
+          By continuing you agree to our{' '}
+          <Span style={styles.legalLink}>Terms</Span>
           {' & '}
           <Span style={styles.legalLink}>Privacy Policy</Span>
         </Text>
@@ -83,8 +100,10 @@ export default function LoginScreen() {
         <TextField
           label="Mobile number"
           prefix={<PhonePrefix />}
-          value={phone}
-          onChangeText={setPhone}
+          value={formatMobile(digits)}
+          onChangeText={text => setDigits(normalizeMobile(text))}
+          onBlur={() => setTouched(true)}
+          error={error ?? undefined}
           placeholder="10-digit mobile number"
           keyboardType="number-pad"
           autoComplete="tel-national"
@@ -97,7 +116,8 @@ export default function LoginScreen() {
         <Button
           label="Get OTP"
           style={styles.otp}
-          onPress={() => nav.navigate('VerifyPhone')}
+          disabled={!digits}
+          onPress={getOtp}
         />
 
         <View style={styles.center}>

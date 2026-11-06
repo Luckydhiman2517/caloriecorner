@@ -12,11 +12,22 @@ import { useNav } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { type } from '../../theme/type';
+import { emailError, normalizeEmail } from '../../utils/validation';
 
 /** 1.3 Email sign-in — design file: Onboard-Email.dc.html */
 export default function EmailSignInScreen() {
   const nav = useNav();
-  const [email, setEmail] = useState('aarav@example.com');
+  const [email, setEmail] = useState('');
+  /** Errors show after the field is left or Send code is tapped, then live. */
+  const [touched, setTouched] = useState(false);
+  const error = touched && email ? emailError(email) : null;
+
+  const sendCode = () => {
+    setTouched(true);
+    if (!emailError(email)) {
+      nav.navigate('VerifyEmail', { email });
+    }
+  };
 
   return (
     <Screen header={<ScreenHeader />}>
@@ -32,7 +43,12 @@ export default function EmailSignInScreen() {
           label="Email address"
           containerStyle={styles.field}
           value={email}
-          onChangeText={setEmail}
+          onChangeText={text => setEmail(normalizeEmail(text))}
+          onBlur={() => setTouched(true)}
+          onSubmitEditing={sendCode}
+          returnKeyType="send"
+          maxLength={254}
+          error={error ?? undefined}
           placeholder="name@example.com"
           keyboardType="email-address"
           autoComplete="email"
@@ -46,7 +62,8 @@ export default function EmailSignInScreen() {
         <Button
           label="Send code"
           style={styles.cta}
-          onPress={() => nav.navigate('VerifyEmail')}
+          disabled={!email}
+          onPress={sendCode}
         />
 
         <View style={styles.alt}>

@@ -9,7 +9,7 @@ import {
   Tap,
   Text,
 } from '../../components';
-import { useNav } from '../../navigation/types';
+import { useNav, useParams } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { type } from '../../theme/type';
@@ -17,6 +17,8 @@ import { type } from '../../theme/type';
 /** 1.5 Verify code · email — design file: Onboard-OTPEmail.dc.html */
 export default function VerifyEmailScreen() {
   const nav = useNav();
+  // Opened from the screens index there is no address, so show the drawn one.
+  const sentTo = useParams<'VerifyEmail'>()?.email ?? 'aarav@example.com';
   const [code, setCode] = useState('482719');
 
   return (
@@ -27,12 +29,14 @@ export default function VerifyEmailScreen() {
         </Text>
         <View style={styles.sent}>
           <Text style={[type.body, styles.sentText]}>
-            Sent to <Span style={styles.sentTo}>aarav@example.com</Span> ·
+            Sent to <Span style={styles.sentTo}>{sentTo}</Span> ·
           </Text>
           <Tap
             accessibilityRole="link"
             accessibilityLabel="Edit email"
-            onPress={() => nav.navigate('EmailSignIn', undefined, { pop: true })}
+            onPress={() =>
+              nav.navigate('EmailSignIn', undefined, { pop: true })
+            }
             style={styles.edit}
           >
             <Text style={styles.editText}>{' Edit'}</Text>
