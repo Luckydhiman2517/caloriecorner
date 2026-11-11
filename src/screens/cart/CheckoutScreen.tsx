@@ -13,10 +13,11 @@ import {
   type IconName,
 } from '../../components';
 import { useNav } from '../../navigation/types';
+import { groupDigits, inr, plural, useCart } from '../../state/cart';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { type } from '../../theme/type';
-import { SuccessPill, Link, ORDER_LINES, OrderItemRow, Pill, ui } from './parts';
+import { DayPill, Link, OrderItemRow, Pill, ui, useOrderLines } from './parts';
 
 type When = 'now' | 'schedule';
 type Pay = 'gpay' | 'phonepe' | 'paytm' | 'card' | 'cod' | 'wallet';
@@ -65,6 +66,8 @@ const INSTRUCTIONS = ['Leave at door', 'Don’t ring bell', 'Call on arrival'];
 /** 3.2 Checkout — design file: Cart-Checkout.dc.html */
 export default function CheckoutScreen() {
   const nav = useNav();
+  const cart = useCart();
+  const orderLines = useOrderLines();
   const [when, setWhen] = useState<When>('now');
   const [pay, setPay] = useState<Pay>('gpay');
   const [notes, setNotes] = useState<Record<string, boolean>>({
@@ -89,7 +92,7 @@ export default function CheckoutScreen() {
             <Text style={ui.meta12}>Secured payment · Free cancellation for 60 sec</Text>
           </View>
           <Button
-            label={`Pay ₹673 via ${PAY_NAMES[pay]}`}
+            label={`Pay ${inr(cart.toPay)} via ${PAY_NAMES[pay]}`}
             textStyle={ui.tabular}
             onPress={() => nav.navigate('Tracking')}
           />
@@ -228,24 +231,31 @@ export default function CheckoutScreen() {
         </View>
         <View style={styles.sumLine}>
           <View style={styles.sumLeft}>
-            <Text style={styles.sumText} numberOfLines={1}>
-              2 meals ·
-            </Text>
-            <Kcal value={680} />
-            <Text style={styles.sumText} numberOfLines={1}>
-              + 1 grocery
-            </Text>
+            {cart.mealUnits ? (
+              <>
+                <Text style={styles.sumText} numberOfLines={1}>
+                  {plural(cart.mealUnits, 'meal', 'meals')} ·
+                </Text>
+                <Kcal value={groupDigits(cart.mealKcal)} />
+              </>
+            ) : null}
+            {cart.groceryUnits ? (
+              <Text style={styles.sumText} numberOfLines={1}>
+                {cart.mealUnits ? '+ ' : ''}
+                {plural(cart.groceryUnits, 'grocery', 'groceries')}
+              </Text>
+            ) : null}
           </View>
           <Text style={ui.price} numberOfLines={1}>
-            ₹673
+            {inr(cart.toPay)}
           </Text>
         </View>
         <View style={styles.sumList}>
-          {ORDER_LINES.map(l => (
+          {orderLines.map(l => (
             <OrderItemRow key={l.name} line={l} style={[styles.sumRow, ui.rowTop]} />
           ))}
         </View>
-        <SuccessPill label="Fits your goal · 340 kcal left today" style={styles.mt4} />
+        <DayPill style={styles.mt4} />
       </View>
 
       {/* Delivery instructions */}

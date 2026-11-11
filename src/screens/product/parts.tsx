@@ -34,6 +34,7 @@ import {
   type IconName,
 } from '../../components';
 import { useNav, type RouteName } from '../../navigation/types';
+import { groupDigits, inr, plural, useCart } from '../../state/cart';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { em, type } from '../../theme/type';
@@ -276,11 +277,15 @@ export function ShopSegmented({
 
 /** The cart bar with the product screens' copy. */
 export function ShopCartBar({ last = false }: { last?: boolean }) {
+  const cart = useCart();
+  if (!cart.items) {
+    return null;
+  }
   return (
     <CartBar
-      kcal="680 kcal"
-      label="in meals · 3 items"
-      sub="₹608 · 43% of today's target"
+      kcal={`${groupDigits(cart.mealKcal)} kcal`}
+      label={`in meals · ${plural(cart.items, 'item', 'items')}`}
+      sub={`${inr(cart.itemTotal)} · ${cart.dayPct}% of today's target`}
       cta="View cart"
       last={last}
     />

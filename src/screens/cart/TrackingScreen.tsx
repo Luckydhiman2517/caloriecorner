@@ -15,18 +15,27 @@ import {
   type IconName,
 } from '../../components';
 import { useNav } from '../../navigation/types';
+import {
+  DAY_EATEN,
+  DAY_TARGET,
+  groupDigits,
+  inr,
+  orderSummary,
+  plural,
+  useCart,
+} from '../../state/cart';
 import { colors, shadows } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { type } from '../../theme/type';
 import {
   SuccessPill,
   Legend,
-  ORDER_LINES,
   OrderItemRow,
   Pill,
   SectionTitle,
   SplitBar,
   ui,
+  useOrderLines,
 } from './parts';
 
 type StepState = 'done' | 'current' | 'next';
@@ -74,6 +83,26 @@ const CANCEL_SECONDS = 48;
 /** 3.3 Order tracking — design file: Cart-Tracking.dc.html */
 export default function TrackingScreen() {
   const nav = useNav();
+  const cart = useCart();
+  const orderLines = useOrderLines();
+  const kitchens = plural(cart.kitchens, 'kitchen', 'kitchens');
+  const grocery = cart.groceryUnits ? 'grocery' : '';
+  // Step sub-lines follow what was ordered.
+  const steps = STEPS.map((st, i) => {
+    const subs = [
+      [cart.kitchens ? kitchens : '', grocery].filter(Boolean).join(' + ') +
+        ' accepted',
+      [cart.kitchens ? `${kitchens} cooking` : '', grocery ? 'grocery packed' : '']
+        .filter(Boolean)
+        .join(' · '),
+      `Ravi picks up all ${plural(cart.items, 'item', 'items')}`,
+    ];
+    return i < subs.length ? { ...st, sub: subs[i] } : st;
+  });
+  const over = cart.dayLeft < 0;
+  const leftLabel = over
+    ? `${groupDigits(-cart.dayLeft)} over`
+    : `${groupDigits(cart.dayLeft)} left`;
   const [secs, setSecs] = useState(CANCEL_SECONDS);
 
   useEffect(() => {
@@ -100,7 +129,7 @@ export default function TrackingScreen() {
           }
         >
           <Text style={type.h3}>Order #CC2481</Text>
-          <Text style={[type.small, ui.tabular]}>Placed 7:42 PM · 3 items</Text>
+          <Text style={[type.small, ui.tabular]}>Placed 7:42 PM · {plural(cart.items, 'item', 'items')}</Text>
         </ScreenHeader>
       }
       contentStyle={styles.main}
@@ -121,7 +150,7 @@ export default function TrackingScreen() {
           Arriving in 22 min
         </Text>
         <Text style={[type.body, styles.mt4]}>Being prepared · by 8:04 PM</Text>
-        <SuccessPill label="Paid ₹673 via UPI" style={styles.mt12} />
+        <SuccessPill label={`Paid ${inr(cart.toPay)} via UPI`} style={styles.mt12} />
         <Tap style={styles.cancel}>
           <Text style={styles.cancelText} accessibilityLiveRegion="polite">
             Cancel order ·{' '}
@@ -210,8 +239,8 @@ export default function TrackingScreen() {
       {/* Status + rider */}
       <View style={styles.statusGroup}>
         <View style={[ui.card, ui.cardPad]} accessibilityLabel="Order status">
-          {STEPS.map((st, i) => {
-            const last = i === STEPS.length - 1;
+          {steps.map((st, i) => {
+            const last = i === steps.length - 1;
             const look = STEP_LOOK[st.state];
             return (
               <View key={st.title} style={styles.step}>
@@ -264,7 +293,7 @@ export default function TrackingScreen() {
           Today’s calories
         </Text>
         <View style={styles.mt10}>
-          <Kcal value={680} size="L" color={colors.turmeric} unitStyle={styles.calUnit} />
+          <Kcal value={groupDigits(cart.mealKcal)} size="L" color={colors.turmeric} unitStyle={styles.calUnit} />
           <Text style={styles.calSub}>in meals, logged when delivered</Text>
         </View>
         <SplitBar
@@ -272,7 +301,9 @@ export default function TrackingScreen() {
           eaten={colors.onDarkMuted}
           order={colors.turmeric}
           rest={colors.white14}
-          accessibilityLabel="580 kcal eaten, 680 kcal from this order, 340 kcal left of 1,600"
+          eatenPart={DAY_EATEN / DAY_TARGET}
+          orderPart={cart.mealKcal / DAY_TARGET}
+          accessibilityLabel={`${groupDigits(DAY_EATEN)} kcal eaten, ${groupDigits(cart.mealKcal)} kcal from this order, ${leftLabel} of ${groupDigits(DAY_TARGET)}`}
         />
         <Legend
           color={colors.onDarkMuted}
@@ -280,18 +311,27 @@ export default function TrackingScreen() {
           order={colors.turmeric}
           rest={colors.white14}
           restBorder={colors.onDarkMuted}
+          labels={[
+            `${groupDigits(DAY_EATEN)} eaten`,
+            `${groupDigits(cart.mealKcal)} this order`,
+            leftLabel,
+          ]}
         />
         <View style={styles.calFoot}>
-          <Text style={styles.calLeft}>340 kcal left today</Text>
-          <Text style={styles.calOf}>1,260 of 1,600</Text>
+          <Text style={styles.calLeft}>
+            {over ? `${groupDigits(-cart.dayLeft)} kcal over today’s target` : `${groupDigits(cart.dayLeft)} kcal left today`}
+          </Text>
+          <Text style={styles.calOf}>
+            {groupDigits(DAY_EATEN + cart.mealKcal)} of {groupDigits(DAY_TARGET)}
+          </Text>
         </View>
       </View>
 
       {/* Your items */}
       <View>
-        <SectionTitle title="Your items" meta="2 meals · 680 kcal + 1 grocery" />
+        <SectionTitle title="Your items" meta={orderSummary(cart)} />
         <View style={ui.card}>
-          {ORDER_LINES.map((l, i) => (
+          {orderLines.map((l, i) => (
             <OrderItemRow
               key={l.name}
               line={l}

@@ -23,6 +23,7 @@ import {
   type IconName,
 } from '../../components';
 import { useNav } from '../../navigation/types';
+import { groupDigits, inr, useCart } from '../../state/cart';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { type } from '../../theme/type';
@@ -257,7 +258,10 @@ export function KcalStack({
 }) {
   return (
     <View style={align === 'right' ? s.alignRight : null}>
-      <Kcal value={kcal} unit={unit} />
+      <Kcal
+        value={typeof kcal === 'number' ? groupDigits(kcal) : kcal}
+        unit={unit}
+      />
       <Text style={ui.price}>{price}</Text>
     </View>
   );
@@ -441,6 +445,48 @@ export const ORDER_LINES: OrderLine[] = [
   },
 ];
 
+/** The cart's lines as order rows (Checkout, Tracking): line totals per row. */
+export function useOrderLines(): OrderLine[] {
+  const cart = useCart();
+  return cart.lines.map(l => {
+    const meal = l.product.kind === 'meal';
+    const meta = [
+      `Qty ${l.qty}`,
+      l.isLight ? 'Light' : null,
+      l.product.meta,
+    ].filter(Boolean);
+    return {
+      name: l.product.name,
+      diet: l.product.diet,
+      meta: meta.join(' · '),
+      notCounted: !meal,
+      // Meals count toward today; groceries show kcal per 100 g.
+      kcal: meal ? l.qty * l.kcal : l.kcal,
+      unit: l.product.unit,
+      price: inr(l.qty * l.price),
+    };
+  });
+}
+
+/** "Fits your goal · 340 kcal left today", or the over-target warning. */
+export function DayPill({ style }: { style?: StyleProp<ViewStyle> }) {
+  const { dayLeft } = useCart();
+  return dayLeft < 0 ? (
+    <Pill
+      label={`${groupDigits(-dayLeft)} kcal over today’s target`}
+      bg={colors.chiliMist}
+      fg={colors.chili}
+      icon="alertCircle"
+      style={[ui.selfStart, style]}
+    />
+  ) : (
+    <SuccessPill
+      label={`Fits your goal · ${groupDigits(dayLeft)} kcal left today`}
+      style={style}
+    />
+  );
+}
+
 /** Name 14/20 600 · meta 12/16 (indented 20) · right-aligned kcal/price. */
 export function OrderItemRow({
   line,
@@ -497,13 +543,18 @@ export function DeliveryCard({
 
 /* ───────────── Day split bar + legend (Cart, Tracking) ───────────── */
 
-/** 580 eaten of 1,600 = 36.25%; 680 this order = 42.5%; rest = left. */
+/**
+ * Eaten · this order · left, as shares of the day's target. Defaults are the
+ * design's 580 eaten (36.25%) and 680 this order (42.5%) of 1,600.
+ */
 export function SplitBar({
   height,
   eaten,
   order,
   rest,
   restBorder,
+  eatenPart = 0.3625,
+  orderPart = 0.425,
   accessibilityLabel,
 }: {
   height: number;
@@ -511,8 +562,12 @@ export function SplitBar({
   order: string;
   rest: string;
   restBorder?: string;
+  eatenPart?: number;
+  orderPart?: number;
   accessibilityLabel: string;
 }) {
+  const orderShare = Math.max(0, Math.min(orderPart, 1 - eatenPart));
+  const restShare = Math.max(0, 1 - eatenPart - orderShare);
   return (
     <View
       accessible
@@ -520,15 +575,20 @@ export function SplitBar({
       accessibilityLabel={accessibilityLabel}
       style={[s.bar, { height }]}
     >
-      <View style={[s.barEaten, { backgroundColor: eaten }]} />
-      <View style={[s.barOrder, { backgroundColor: order }]} />
-      <View
-        style={[
-          ui.flex,
-          { backgroundColor: rest },
-          restBorder ? [s.border1, { borderColor: restBorder }] : null,
-        ]}
-      />
+      {eatenPart > 0 ? (
+        <View style={{ flex: eatenPart, backgroundColor: eaten }} />
+      ) : null}
+      {orderShare > 0 ? (
+        <View style={{ flex: orderShare, backgroundColor: order }} />
+      ) : null}
+      {restShare > 0 ? (
+        <View
+          style={[
+            { flex: restShare, backgroundColor: rest },
+            restBorder ? [s.border1, { borderColor: restBorder }] : null,
+          ]}
+        />
+      ) : null}
     </View>
   );
 }
@@ -540,17 +600,20 @@ export function Legend({
   order,
   rest,
   restBorder,
+  labels = ['580 eaten', '680 this order', '340 left'],
 }: {
   color: string;
   eaten: string;
   order: string;
   rest: string;
   restBorder: string;
+  /** Eaten · this order · left (or over). */
+  labels?: [string, string, string];
 }) {
   const items = [
-    { label: '580 eaten', bg: eaten },
-    { label: '680 this order', bg: order },
-    { label: '340 left', bg: rest, border: restBorder },
+    { label: labels[0], bg: eaten },
+    { label: labels[1], bg: order },
+    { label: labels[2], bg: rest, border: restBorder },
   ];
   return (
     <View
@@ -663,8 +726,6 @@ const s = StyleSheet.create({
     borderRadius: 999,
     overflow: 'hidden',
   },
-  barEaten: { width: '36.25%' },
-  barOrder: { width: '42.5%' },
   legend: {
     flexDirection: 'row',
     flexWrap: 'wrap',

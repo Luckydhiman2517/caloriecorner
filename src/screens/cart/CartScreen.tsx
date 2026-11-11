@@ -1,6 +1,5 @@
 import { useState } from 'react';
 import { Image, StyleSheet, View } from 'react-native';
-import { images } from '../../assets/images';
 import {
   AddButton,
   BottomBar,
@@ -13,9 +12,23 @@ import {
   Text,
 } from '../../components';
 import { useNav } from '../../navigation/types';
+import {
+  ADD_ON_IDS,
+  DAY_EATEN,
+  DAY_TARGET,
+  DELIVERY_FEE,
+  PRODUCTS,
+  groupDigits,
+  inr,
+  orderSummary,
+  plural,
+  useCart,
+  type CartLine,
+} from '../../state/cart';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { em, type } from '../../theme/type';
+import { CouponSheet } from './CouponSheet';
 import {
   CartItemRow,
   DeliveryCard,
@@ -28,93 +41,84 @@ import {
   type CartItem,
 } from './parts';
 
-const MEALS: CartItem[] = [
-  {
-    id: 'paneer',
-    name: 'Paneer tikka millet bowl',
-    diet: 'veg',
-    photoLabel: 'Paneer tikka millet bowl, photo coming soon',
-    meta: 'Green Fork Kitchen',
-    protein: '28 g protein',
-    portion: 'Regular',
-    editable: true,
-    kcal: 420,
-    price: '₹249',
-  },
-  {
-    id: 'omelette',
-    name: 'Egg white veggie omelette',
-    diet: 'nonveg',
-    image: images.eggsThumb,
-    photoLabel: 'Egg white veggie omelette',
-    meta: 'Protein Pot · Contains egg',
-    protein: '24 g protein',
-    portion: 'Regular',
-    kcal: 260,
-    price: '₹179',
-  },
-];
-
-const GROCERIES: CartItem[] = [
-  {
-    id: 'yogurt',
-    name: 'Unsweetened Greek yogurt',
-    diet: 'veg',
-    image: images.greekYogurtThumb,
-    photoLabel: 'Unsweetened Greek yogurt',
-    meta: '400 g · 380 kcal pack',
-    notCounted: true,
-    kcal: 95,
-    unit: 'kcal/100 g',
-    price: '₹180',
-  },
-];
-
-const ADD_ONS = [
-  {
-    name: 'Moong sprout chaat',
-    image: images.moongSproutsThumb,
-    meta: 'Millet Mama',
-    kcal: 180,
-    unit: undefined,
-    price: '₹149',
-  },
-  {
-    name: 'Blueberries',
-    image: images.blueberriesThumb,
-    meta: '125 g · 71 kcal pack',
-    kcal: 57,
-    unit: 'kcal/100 g',
-    price: '₹299',
-  },
-];
-
-const BILL = [
-  ['Item total', '₹608'],
-  ['Delivery', '₹25'],
-  ['Platform fee', '₹9'],
-  ['GST & charges', '₹31'],
-] as const;
+/** A cart line in the shape the item row draws. */
+function toItem(l: CartLine): CartItem {
+  const meal = l.product.kind === 'meal';
+  return {
+    id: l.product.id,
+    name: l.product.name,
+    diet: l.product.diet,
+    image: l.product.image,
+    photoLabel: l.product.photoLabel,
+    meta: l.product.meta,
+    protein: meal ? `${l.protein} g protein` : undefined,
+    portion: meal ? (l.isLight ? 'Light' : 'Regular') : undefined,
+    editable: l.product.editable,
+    notCounted: !meal,
+    kcal: l.kcal,
+    unit: l.product.unit,
+    price: inr(l.price),
+  };
+}
 
 /** 3.1 Cart — design file: Cart-Cart.dc.html */
 export default function CartScreen() {
   const nav = useNav();
-  const [qty, setQty] = useState<Record<string, number>>({
-    paneer: 1,
-    omelette: 1,
-    yogurt: 1,
-  });
-  const setItemQty = (id: string) => (q: number) =>
-    setQty(prev => ({ ...prev, [id]: Math.max(0, q) }));
-  const meals = MEALS.filter(m => qty[m.id] > 0);
-  const groceries = GROCERIES.filter(g => qty[g.id] > 0);
+  const cart = useCart();
+  const [couponsOpen, setCouponsOpen] = useState(false);
+
+  const over = cart.dayLeft < 0;
+  const leftLabel = over
+    ? `${groupDigits(-cart.dayLeft)} over`
+    : `${groupDigits(cart.dayLeft)} left`;
+  const couponOn = !!cart.coupon && cart.couponShortfall === 0;
+  const saving = cart.discount + (DELIVERY_FEE - cart.delivery);
+  const swapLine = cart.meals.find(l => l.product.light);
+  const addOns = PRODUCTS.filter(
+    p => ADD_ON_IDS.includes(p.id) && cart.qtyOf(p.id) === 0,
+  );
+
+  if (!cart.items) {
+    return (
+      <Screen
+        header={
+          <ScreenHeader
+            title="Your cart"
+            subtitle="Nothing added yet"
+            onBack={() => nav.navigate('Home')}
+          />
+        }
+        contentStyle={styles.main}
+      >
+        <View style={styles.empty}>
+          <View style={styles.emptyIcon}>
+            <Icon name="bag" size={24} color={colors.ink2} />
+          </View>
+          <Text style={[type.h2, styles.emptyTitle]} accessibilityRole="header">
+            Your cart is empty
+          </Text>
+          <Text style={[type.body, styles.emptyBody]}>
+            <Text style={styles.leftToday}>
+              {groupDigits(DAY_TARGET - DAY_EATEN)} kcal left today
+            </Text>{' '}
+            — find a meal that fits.
+          </Text>
+          <Button
+            label="Browse meals"
+            style={styles.emptyCta}
+            onPress={() => nav.navigate('Home')}
+          />
+        </View>
+      </Screen>
+    );
+  }
 
   return (
     <Screen
       header={
         <ScreenHeader
           title="Your cart"
-          subtitle="2 meals · 680 kcal + 1 grocery"
+          subtitle={orderSummary(cart)}
           onBack={() => nav.navigate('Home')}
         />
       }
@@ -122,16 +126,27 @@ export default function CartScreen() {
       bottomGap={20}
       footer={
         <BottomBar style={styles.payBar}>
-          <View>
+          <View
+            accessible
+            accessibilityLabel={`${groupDigits(
+              cart.mealKcal,
+            )} kcal in meals, ${inr(cart.toPay)} to pay for ${plural(
+              cart.items,
+              'item',
+              'items',
+            )}`}
+          >
             <View style={styles.payKcal}>
               <Text style={styles.payKcalNum} numberOfLines={1}>
-                680
+                {groupDigits(cart.mealKcal)}
               </Text>
               <Text style={styles.payKcalUnit} numberOfLines={1}>
                 kcal in meals
               </Text>
             </View>
-            <Text style={[ui.price, styles.mt2]}>₹673 · 3 items</Text>
+            <Text style={[ui.price, styles.mt2]}>
+              {inr(cart.toPay)} · {plural(cart.items, 'item', 'items')}
+            </Text>
           </View>
           <Button style={ui.flex} onPress={() => nav.navigate('Checkout')}>
             <Text style={styles.payCta}>Proceed to pay</Text>
@@ -163,65 +178,102 @@ export default function CartScreen() {
         </Text>
         <View style={styles.dayRow}>
           <View style={styles.dayKcal}>
-            <Text style={styles.dayKcalNum}>680</Text>
+            <Text style={[styles.dayKcalNum, over ? styles.overText : null]}>
+              {groupDigits(cart.mealKcal)}
+            </Text>
             <Text style={styles.dayKcalLabel}>kcal in meals</Text>
           </View>
           <View style={styles.alignRight}>
-            <Text style={styles.dayPct}>43%</Text>
+            <Text style={styles.dayPct}>{cart.dayPct}%</Text>
             <Text style={ui.meta12}>of today’s target</Text>
           </View>
         </View>
         <SplitBar
           height={12}
           eaten={colors.ink2}
-          order={colors.turmeric}
+          order={over ? colors.chili : colors.turmeric}
           rest={colors.stone}
           restBorder={colors.mapLine}
-          accessibilityLabel="Today: 580 kcal eaten, 680 kcal in this order, 340 kcal left of 1,600"
+          eatenPart={DAY_EATEN / DAY_TARGET}
+          orderPart={cart.mealKcal / DAY_TARGET}
+          accessibilityLabel={`Today: ${groupDigits(
+            DAY_EATEN,
+          )} kcal eaten, ${groupDigits(
+            cart.mealKcal,
+          )} kcal in this order, ${leftLabel} of ${groupDigits(DAY_TARGET)}`}
         />
         <Legend
           color={colors.ink2}
           eaten={colors.ink2}
-          order={colors.turmeric}
+          order={over ? colors.chili : colors.turmeric}
           rest={colors.stone}
           restBorder={colors.mapLine}
+          labels={[
+            `${groupDigits(DAY_EATEN)} eaten`,
+            `${groupDigits(cart.mealKcal)} this order`,
+            leftLabel,
+          ]}
         />
         <View style={styles.fits}>
-          <Icon name="check" size={16} color={colors.leaf} />
-          <Text style={styles.fitsText}>Fits your goal · 340 kcal left today</Text>
+          <Icon
+            name={over ? 'alertCircle' : 'check'}
+            size={16}
+            color={over ? colors.chili : colors.leaf}
+          />
+          <Text style={[styles.fitsText, over ? styles.overText : null]}>
+            {over
+              ? `${groupDigits(-cart.dayLeft)} kcal over today’s target`
+              : `Fits your goal · ${groupDigits(cart.dayLeft)} kcal left today`}
+          </Text>
         </View>
-        <Text style={styles.protein}>52 g protein · 43% of 120 g</Text>
+        {cart.mealUnits ? (
+          <Text style={styles.protein}>
+            {cart.protein} g protein · {cart.proteinPct}% of 120 g
+          </Text>
+        ) : null}
       </View>
 
       {/* Meals + groceries */}
       <View>
-        <SectionTitle title="Meals" meta="From 2 kitchens" />
-        {meals.length ? (
-          <View style={ui.card}>
-            {meals.map((m, i) => (
-              <CartItemRow
-                key={m.id}
-                item={m}
-                qty={qty[m.id]}
-                onQty={setItemQty(m.id)}
-                first={i === 0}
-              />
-            ))}
-          </View>
+        {cart.meals.length ? (
+          <>
+            <SectionTitle
+              title="Meals"
+              meta={`From ${plural(cart.kitchens, 'kitchen', 'kitchens')}`}
+            />
+            <View style={ui.card}>
+              {cart.meals.map((l, i) => (
+                <CartItemRow
+                  key={l.product.id}
+                  item={toItem(l)}
+                  qty={l.qty}
+                  onQty={q => cart.setQty(l.product.id, q)}
+                  first={i === 0}
+                />
+              ))}
+            </View>
+          </>
         ) : null}
 
-        {groceries.length ? (
+        {cart.groceries.length ? (
           <>
-            <Text style={[type.h3, styles.groceriesTitle]} accessibilityRole="header">
+            <Text
+              style={[
+                type.h3,
+                styles.groceriesTitle,
+                cart.meals.length ? null : styles.groceriesFirst,
+              ]}
+              accessibilityRole="header"
+            >
               Groceries · arrives with your meals
             </Text>
             <View style={ui.card}>
-              {groceries.map((g, i) => (
+              {cart.groceries.map((l, i) => (
                 <CartItemRow
-                  key={g.id}
-                  item={g}
-                  qty={qty[g.id]}
-                  onQty={setItemQty(g.id)}
+                  key={l.product.id}
+                  item={toItem(l)}
+                  qty={l.qty}
+                  onQty={q => cart.setQty(l.product.id, q)}
                   first={i === 0}
                 />
               ))}
@@ -231,82 +283,114 @@ export default function CartScreen() {
       </View>
 
       {/* Swap & save */}
-      <View style={styles.swap}>
-        <View style={ui.flex}>
-          <Text style={type.eyebrow} accessibilityRole="header">
-            Swap & save
-          </Text>
-          <Text style={styles.swapTitle}>
-            Make the paneer bowl Light — save 90 kcal and ₹20
-          </Text>
-          <Text style={styles.swapSub}>Light portion: 330 kcal · ₹229</Text>
-        </View>
-        <Tap
-          accessibilityLabel="Swap to Light portion of Paneer tikka millet bowl"
-          style={styles.swapBtn}
-        >
-          <Text style={styles.swapBtnText}>Swap</Text>
-        </Tap>
-      </View>
+      {swapLine?.product.light ? (
+        <SwapCard
+          line={swapLine}
+          onSwap={on => cart.setLight(swapLine.product.id, on)}
+        />
+      ) : null}
 
       {/* Add more */}
-      <View>
-        <SectionTitle title="Add more" meta="Light add-ons" />
-        <View style={styles.grid}>
-          {ADD_ONS.map(a => (
-            <View key={a.name} style={[ui.card, styles.addOn]}>
-              <View style={styles.addOnTop}>
-                <Image
-                  source={a.image}
-                  accessibilityLabel={a.name}
-                  resizeMode="cover"
-                  style={styles.addOnImage}
+      {addOns.length ? (
+        <View>
+          <SectionTitle title="Add more" meta="Light add-ons" />
+          <View style={styles.grid}>
+            {addOns.map(a => (
+              <View key={a.id} style={[ui.card, styles.addOn]}>
+                <View style={styles.addOnTop}>
+                  <Image
+                    source={a.image}
+                    accessibilityLabel={a.name}
+                    resizeMode="cover"
+                    style={styles.addOnImage}
+                  />
+                  <AddButton name={a.name} onPress={() => cart.add(a.id)} />
+                </View>
+                <View style={styles.addOnName}>
+                  <ItemName
+                    name={a.name}
+                    diet={a.diet}
+                    markTop={2}
+                    textStyle={styles.addOnNameText}
+                    header
+                  />
+                </View>
+                <Text style={[ui.meta12, styles.mt2]}>{a.meta}</Text>
+                <KcalRow
+                  kcal={a.kcal}
+                  unit={a.unit}
+                  price={inr(a.price)}
+                  gap={8}
+                  style={styles.addOnPrice}
                 />
-                <AddButton name={a.name} />
               </View>
-              <View style={styles.addOnName}>
-                <ItemName
-                  name={a.name}
-                  diet="veg"
-                  markTop={2}
-                  textStyle={styles.addOnNameText}
-                  header
-                />
-              </View>
-              <Text style={[ui.meta12, styles.mt2]}>{a.meta}</Text>
-              <KcalRow
-                kcal={a.kcal}
-                unit={a.unit}
-                price={a.price}
-                gap={8}
-                style={styles.addOnPrice}
-              />
-            </View>
-          ))}
+            ))}
+            {addOns.length === 1 ? <View style={ui.flex} /> : null}
+          </View>
         </View>
-      </View>
+      ) : null}
 
       {/* Coupon + bill */}
       <View style={styles.billSection}>
-        <Tap style={[ui.card, styles.coupon]}>
-          <Icon name="tag" size={20} color={colors.turmericDeep} />
-          <Text style={styles.couponText}>Apply coupon</Text>
-          <Icon name="chevronRight" size={20} color={colors.ink3} />
+        <Tap
+          onPress={() => setCouponsOpen(true)}
+          accessibilityLabel={
+            cart.coupon ? `Coupon ${cart.coupon.code}, change` : 'Apply coupon'
+          }
+          style={[ui.card, styles.coupon]}
+        >
+          <Icon
+            name="tag"
+            size={20}
+            color={couponOn ? colors.leaf : colors.turmericDeep}
+          />
+          {cart.coupon ? (
+            <View style={ui.flex}>
+              <Text style={styles.couponText}>{cart.coupon.code} applied</Text>
+              <Text style={couponOn ? styles.couponSave : styles.couponShort}>
+                {couponOn
+                  ? `You save ${inr(saving)}`
+                  : `Add ${inr(cart.couponShortfall)} more to use this code`}
+              </Text>
+            </View>
+          ) : (
+            <Text style={[styles.couponText, ui.flex]}>Apply coupon</Text>
+          )}
+          {cart.coupon ? (
+            <Tap
+              onPress={cart.removeCoupon}
+              accessibilityLabel={`Remove coupon ${cart.coupon.code}`}
+              hitSlop={{ top: 10, bottom: 10, left: 8, right: 8 }}
+            >
+              <Text style={styles.remove}>Remove</Text>
+            </Tap>
+          ) : (
+            <Icon name="chevronRight" size={20} color={colors.ink3} />
+          )}
         </Tap>
         <View style={[ui.card, ui.cardPad]}>
           <Text style={[type.h3, styles.billTitle]} accessibilityRole="header">
             Bill details
           </Text>
           <View style={styles.bill}>
-            {BILL.map(([k, v]) => (
-              <View key={k} style={styles.billRow}>
-                <Text style={[styles.billText, styles.billKey]}>{k}</Text>
-                <Text style={styles.billText}>{v}</Text>
-              </View>
-            ))}
+            <BillRow label="Item total" value={inr(cart.itemTotal)} />
+            {cart.discount ? (
+              <BillRow
+                label={`Coupon · ${cart.coupon?.code}`}
+                value={`−${inr(cart.discount)}`}
+                good
+              />
+            ) : null}
+            <BillRow
+              label="Delivery"
+              value={cart.delivery ? inr(cart.delivery) : 'Free'}
+              good={!cart.delivery}
+            />
+            <BillRow label="Platform fee" value={inr(cart.platform)} />
+            <BillRow label="GST & charges" value={inr(cart.gst)} />
             <View style={styles.totalRow}>
               <Text style={styles.totalKey}>To pay</Text>
-              <Text style={styles.totalValue}>₹673</Text>
+              <Text style={styles.totalValue}>{inr(cart.toPay)}</Text>
             </View>
           </View>
         </View>
@@ -317,7 +401,89 @@ export default function CartScreen() {
           </Text>
         </View>
       </View>
+
+      <CouponSheet
+        visible={couponsOpen}
+        onClose={() => setCouponsOpen(false)}
+      />
     </Screen>
+  );
+}
+
+function BillRow({
+  label,
+  value,
+  good = false,
+}: {
+  label: string;
+  value: string;
+  good?: boolean;
+}) {
+  return (
+    <View style={styles.billRow}>
+      <Text style={[styles.billText, styles.billKey]}>{label}</Text>
+      <Text style={[styles.billText, good ? styles.billGood : null]}>
+        {value}
+      </Text>
+    </View>
+  );
+}
+
+/**
+ * "Swap & save": offers the lighter portion of a meal in the cart, and once
+ * swapped shows what was saved with an Undo.
+ */
+function SwapCard({
+  line,
+  onSwap,
+}: {
+  line: CartLine;
+  onSwap: (light: boolean) => void;
+}) {
+  const p = line.product;
+  if (!p.light) {
+    return null;
+  }
+  const saveKcal = (p.kcal - p.light.kcal) * line.qty;
+  const savePrice = (p.price - p.light.price) * line.qty;
+  const name = p.shortName ?? p.name;
+  const swapped = line.isLight;
+  return (
+    <View style={[styles.swap, swapped ? styles.swapDone : null]}>
+      <View style={ui.flex}>
+        <Text
+          style={[type.eyebrow, swapped ? styles.swapDoneLabel : null]}
+          accessibilityRole="header"
+        >
+          {swapped ? 'Swapped' : 'Swap & save'}
+        </Text>
+        <Text style={styles.swapTitle}>
+          {swapped
+            ? `Your ${name} is now Light — saving ${saveKcal} kcal and ${inr(
+                savePrice,
+              )}`
+            : `Make the ${name} Light — save ${saveKcal} kcal and ${inr(
+                savePrice,
+              )}`}
+        </Text>
+        <Text style={styles.swapSub}>
+          {swapped
+            ? `Regular was ${p.kcal} kcal · ${inr(p.price)}`
+            : `Light portion: ${p.light.kcal} kcal · ${inr(p.light.price)}`}
+        </Text>
+      </View>
+      <Tap
+        onPress={() => onSwap(!swapped)}
+        accessibilityLabel={
+          swapped
+            ? `Undo swap, back to Regular ${p.name}`
+            : `Swap to Light portion of ${p.name}`
+        }
+        style={styles.swapBtn}
+      >
+        <Text style={styles.swapBtnText}>{swapped ? 'Undo' : 'Swap'}</Text>
+      </Tap>
+    </View>
   );
 }
 
@@ -326,6 +492,7 @@ const styles = StyleSheet.create({
   mt2: { marginTop: 2 },
   shrink: { flexShrink: 1 },
   alignRight: { alignItems: 'flex-end' },
+  overText: { color: colors.chili },
 
   divider: { marginVertical: 12 },
   etaRow: { flexDirection: 'row', alignItems: 'center', gap: 10 },
@@ -340,7 +507,12 @@ const styles = StyleSheet.create({
   },
   dayKcal: { flexDirection: 'row', alignItems: 'baseline', gap: 6 },
   dayKcalNum: { ...type.numeralXL, color: colors.turmericDeep },
-  dayKcalLabel: { ...ff('body', 600), fontSize: 14, lineHeight: 20, color: colors.ink2 },
+  dayKcalLabel: {
+    ...ff('body', 600),
+    fontSize: 14,
+    lineHeight: 20,
+    color: colors.ink2,
+  },
   dayPct: {
     ...ff('display', 700),
     fontSize: 20,
@@ -365,6 +537,7 @@ const styles = StyleSheet.create({
   },
 
   groceriesTitle: { marginTop: 24, marginBottom: 12 },
+  groceriesFirst: { marginTop: 0 },
 
   swap: {
     backgroundColor: colors.kcalCream,
@@ -377,6 +550,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 12,
   },
+  swapDone: {
+    backgroundColor: colors.leafMist,
+    borderStyle: 'solid',
+    borderColor: colors.leaf,
+  },
+  swapDoneLabel: { color: colors.leaf },
   swapTitle: { ...ff('body', 600), marginTop: 6, fontSize: 14, lineHeight: 20 },
   swapSub: {
     marginTop: 4,
@@ -412,13 +591,29 @@ const styles = StyleSheet.create({
 
   billSection: { gap: 12 },
   coupon: {
-    height: 56,
+    minHeight: 56,
     paddingHorizontal: 16,
+    paddingVertical: 10,
     flexDirection: 'row',
     alignItems: 'center',
     gap: 12,
   },
-  couponText: { ...ff('body', 600), flex: 1, fontSize: 15, color: colors.forestInk },
+  couponText: { ...ff('body', 600), fontSize: 15, color: colors.forestInk },
+  couponSave: {
+    ...ff('body', 600),
+    marginTop: 2,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.leaf,
+  },
+  couponShort: {
+    ...ff('body', 600),
+    marginTop: 2,
+    fontSize: 13,
+    lineHeight: 18,
+    color: colors.turmericDeep,
+  },
+  remove: { ...ff('body', 700), fontSize: 14, color: colors.turmericDeep },
   billTitle: { marginBottom: 14 },
   bill: { gap: 10 },
   billRow: { flexDirection: 'row', justifyContent: 'space-between', gap: 12 },
@@ -429,6 +624,7 @@ const styles = StyleSheet.create({
     fontVariant: ['tabular-nums'],
   },
   billKey: { color: colors.ink2 },
+  billGood: { ...ff('body', 600), color: colors.leaf },
   totalRow: {
     flexDirection: 'row',
     alignItems: 'baseline',
@@ -469,4 +665,18 @@ const styles = StyleSheet.create({
     color: colors.turmericDeep,
   },
   payCta: { ...ff('body', 600), fontSize: 16, color: '#FFFFFF' },
+
+  empty: { alignItems: 'center', paddingTop: 40 },
+  emptyIcon: {
+    width: 72,
+    height: 72,
+    borderRadius: 999,
+    backgroundColor: colors.stone,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emptyTitle: { marginTop: 16, textAlign: 'center' },
+  emptyBody: { marginTop: 4, textAlign: 'center' },
+  leftToday: { ...ff('body', 700), color: colors.turmericDeep },
+  emptyCta: { marginTop: 24, alignSelf: 'stretch' },
 });
