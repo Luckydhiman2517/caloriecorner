@@ -11,6 +11,13 @@ import {
   Text,
 } from '../../components';
 import { useNav } from '../../navigation/types';
+import {
+  groupDigits,
+  inr,
+  productById,
+  useCart,
+  type ProductId,
+} from '../../state/cart';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { em, type } from '../../theme/type';
@@ -23,6 +30,7 @@ import {
   SectionTitle,
 } from './detailParts';
 
+const MEAL_ID: ProductId = 'paneer';
 const NAME = 'Paneer tikka millet bowl';
 
 const PORTIONS = [
@@ -60,36 +68,47 @@ export default function MealScreen() {
   const nav = useNav();
   const [portion, setPortion] = useState<Portion>('regular');
   const [addOns, setAddOns] = useState<Record<string, boolean>>({});
-  const [qty, setQty] = useState(1);
+  const cart = useCart();
+  const qty = cart.qtyOf(MEAL_ID);
+  // One more bowl, at the portion the cart holds (Light after "Swap & save").
+  const line = cart.lines.find(l => l.product.id === MEAL_ID);
+  const product = productById(MEAL_ID);
+  const unitKcal = line?.kcal ?? product?.kcal ?? 0;
+  const unitPrice = line?.price ?? product?.price ?? 0;
+  const overBy = unitKcal - cart.dayLeft;
 
   return (
     <Screen
       bottomGap={0}
       footer={
         <BottomBar>
-          <View style={styles.overBanner}>
-            <Icon name="alertCircle" size={20} color={colors.chili} />
-            <Text style={styles.overText}>
-              Another bowl would put you{' '}
-              <Span style={ff('body', 700)}>80 kcal over</Span>
-              {" today's target"}
-            </Text>
-          </View>
-          <View style={styles.barRow}>
-            <View style={styles.inCart}>
-              <Text style={styles.inCartLabel}>In cart: {qty}</Text>
-              <BarStepper
-                qty={qty}
-                name={NAME}
-                onChange={q => setQty(Math.max(0, q))}
-              />
+          {overBy > 0 ? (
+            <View style={styles.overBanner}>
+              <Icon name="alertCircle" size={20} color={colors.chili} />
+              <Text style={styles.overText}>
+                {qty ? 'Another bowl' : 'This bowl'} would put you{' '}
+                <Span style={ff('body', 700)}>{groupDigits(overBy)} kcal over</Span>
+                {" today's target"}
+              </Text>
             </View>
+          ) : null}
+          <View style={[styles.barRow, overBy > 0 ? styles.barGap : null]}>
+            {qty ? (
+              <View style={styles.inCart}>
+                <Text style={styles.inCartLabel}>In cart: {qty}</Text>
+                <BarStepper
+                  qty={qty}
+                  name={NAME}
+                  onChange={q => cart.setQty(MEAL_ID, q)}
+                />
+              </View>
+            ) : null}
             <AddBarButton
-              label="Add another"
+              label={qty ? 'Add another' : 'Add to cart'}
               labelSize={15}
-              kcal="420"
-              price="₹249"
-              onPress={() => nav.navigate('Cart')}
+              kcal={String(unitKcal)}
+              price={inr(unitPrice)}
+              onPress={() => cart.add(MEAL_ID)}
               style={styles.addAnother}
             />
           </View>
@@ -384,7 +403,8 @@ const styles = StyleSheet.create({
     lineHeight: 20,
     color: colors.chili,
   },
-  barRow: { marginTop: 12, flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
+  barRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
+  barGap: { marginTop: 12 },
   inCart: { gap: 4 },
   inCartLabel: { ...ff('body', 600), fontSize: 12, lineHeight: 16, color: colors.ink3 },
   addAnother: { flex: 1, minWidth: 0, paddingHorizontal: 10 },

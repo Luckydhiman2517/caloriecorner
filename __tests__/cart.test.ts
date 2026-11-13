@@ -1,4 +1,9 @@
-import { computeTotals, groupDigits, orderSummary } from '../src/state/cart';
+import {
+  PRODUCTS,
+  computeTotals,
+  groupDigits,
+  orderSummary,
+} from '../src/state/cart';
 
 const BASE = { paneer: 1, omelette: 1, yogurt: 1 };
 
@@ -62,11 +67,34 @@ describe('cart totals', () => {
     expect(t.toPay).toBe(223);
   });
 
+  it('counts products added from the shop screens', () => {
+    // Home: berry bowl; Kitchen: upma; Groceries: eggs; Item: 750 g muesli.
+    const t = computeTotals(
+      { ...BASE, berryBowl: 1, upma: 2, eggs: 1, muesli750: 1 },
+      {},
+      null,
+    );
+    expect(t.items).toBe(8);
+    expect(t.mealUnits).toBe(5);
+    expect(t.groceryUnits).toBe(3);
+    expect(t.mealKcal).toBe(420 + 260 + 340 + 2 * 280);
+    expect(t.itemTotal).toBe(608 + 199 + 2 * 149 + 120 + 599);
+    expect(t.kitchens).toBe(2);
+    expect(orderSummary(t)).toBe('5 meals · 1,580 kcal + 3 groceries');
+  });
+
   it('is empty with nothing in it', () => {
     const t = computeTotals({}, {}, 'FIT50');
     expect(t.items).toBe(0);
     expect(t.toPay).toBe(0);
     expect(orderSummary(t)).toBe('Nothing added yet');
+  });
+});
+
+describe('catalog', () => {
+  it('has one entry per product id', () => {
+    const ids = PRODUCTS.map(p => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
   });
 });
 

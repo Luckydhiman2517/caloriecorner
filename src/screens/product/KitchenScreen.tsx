@@ -11,6 +11,7 @@ import {
   Span,
   Text,
 } from '../../components';
+import type { ProductId } from '../../state/cart';
 import { useNav } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
@@ -99,7 +100,7 @@ type Dish = {
   kcal: number;
   price: string;
   protein: string;
-  initialQty: number;
+  productId: ProductId;
 };
 
 function MenuSection({
@@ -144,7 +145,7 @@ const BOWLS: Dish[] = [
     kcal: 340,
     price: '₹199',
     protein: '14 g protein',
-    initialQty: 0,
+    productId: 'berryBowl',
   },
   {
     photo: 'green',
@@ -154,7 +155,7 @@ const BOWLS: Dish[] = [
     kcal: 390,
     price: '₹229',
     protein: '15 g protein',
-    initialQty: 0,
+    productId: 'hummusBowl',
   },
   {
     photo: 'warm',
@@ -164,7 +165,7 @@ const BOWLS: Dish[] = [
     kcal: 420,
     price: '₹249',
     protein: '28 g protein',
-    initialQty: 1,
+    productId: 'paneer',
   },
 ];
 
@@ -177,7 +178,7 @@ const BREAKFAST: Dish[] = [
     kcal: 280,
     price: '₹149',
     protein: '9 g protein',
-    initialQty: 0,
+    productId: 'upma',
   },
   {
     photo: 'green',
@@ -187,7 +188,7 @@ const BREAKFAST: Dish[] = [
     kcal: 330,
     price: '₹189',
     protein: '10 g protein',
-    initialQty: 0,
+    productId: 'pancakes',
   },
 ];
 

@@ -19,8 +19,25 @@ export type Diet = 'veg' | 'nonveg';
 
 type PortionValues = { kcal: number; price: number; protein: number };
 
+export type ProductId =
+  | 'paneer'
+  | 'omelette'
+  | 'chaat'
+  | 'berryBowl'
+  | 'hummusBowl'
+  | 'upma'
+  | 'pancakes'
+  | 'khichdi'
+  | 'yogurt'
+  | 'eggs'
+  | 'sprouts'
+  | 'muesli'
+  | 'muesli750'
+  | 'muesli1kg'
+  | 'blueberries';
+
 export type Product = {
-  id: string;
+  id: ProductId;
   kind: 'meal' | 'grocery';
   name: string;
   diet: Diet;
@@ -82,7 +99,68 @@ export const PRODUCTS: Product[] = [
     kitchen: 'Millet Mama',
     kcal: 180,
     price: 149,
+    protein: 11,
+  },
+  {
+    id: 'berryBowl',
+    kind: 'meal',
+    name: 'Berry muesli yogurt bowl',
+    diet: 'veg',
+    image: images.berryMuesliBowl,
+    photoLabel: 'Berry muesli yogurt bowl',
+    meta: 'Green Fork Kitchen',
+    kitchen: 'Green Fork Kitchen',
+    kcal: 340,
+    price: 199,
+    protein: 14,
+  },
+  {
+    id: 'hummusBowl',
+    kind: 'meal',
+    name: 'Roasted veg hummus bowl',
+    diet: 'veg',
+    photoLabel: 'Roasted veg hummus bowl, photo coming soon',
+    meta: 'Green Fork Kitchen',
+    kitchen: 'Green Fork Kitchen',
+    kcal: 390,
+    price: 229,
+    protein: 15,
+  },
+  {
+    id: 'upma',
+    kind: 'meal',
+    name: 'Masala oats upma',
+    diet: 'veg',
+    photoLabel: 'Masala oats upma, photo coming soon',
+    meta: 'Green Fork Kitchen',
+    kitchen: 'Green Fork Kitchen',
+    kcal: 280,
+    price: 149,
+    protein: 9,
+  },
+  {
+    id: 'pancakes',
+    kind: 'meal',
+    name: 'Ragi banana pancakes',
+    diet: 'veg',
+    photoLabel: 'Ragi banana pancakes, photo coming soon',
+    meta: 'Green Fork Kitchen',
+    kitchen: 'Green Fork Kitchen',
+    kcal: 330,
+    price: 189,
     protein: 10,
+  },
+  {
+    id: 'khichdi',
+    kind: 'meal',
+    name: 'Light dal khichdi',
+    diet: 'veg',
+    photoLabel: 'Light dal khichdi, photo coming soon',
+    meta: 'Millet Mama',
+    kitchen: 'Millet Mama',
+    kcal: 310,
+    price: 169,
+    protein: 12,
   },
   {
     id: 'yogurt',
@@ -95,6 +173,66 @@ export const PRODUCTS: Product[] = [
     kcal: 95,
     unit: 'kcal/100 g',
     price: 180,
+  },
+  {
+    id: 'eggs',
+    kind: 'grocery',
+    name: 'Pasture-raised eggs',
+    diet: 'nonveg',
+    image: images.eggsThumb,
+    photoLabel: 'Pasture-raised eggs',
+    meta: '6 pcs · 420 kcal pack',
+    kcal: 70,
+    unit: 'kcal/egg',
+    price: 120,
+  },
+  {
+    id: 'sprouts',
+    kind: 'grocery',
+    name: 'Fresh moong sprouts',
+    diet: 'veg',
+    image: images.moongSproutsThumb,
+    photoLabel: 'Fresh moong sprouts',
+    meta: '200 g · 120 kcal pack',
+    kcal: 60,
+    unit: 'kcal/100 g',
+    price: 45,
+  },
+  {
+    id: 'muesli',
+    kind: 'grocery',
+    name: 'No-added-sugar muesli',
+    diet: 'veg',
+    image: images.muesliBowlHero,
+    photoLabel: 'No-added-sugar muesli',
+    meta: '400 g · 1,520 kcal pack',
+    kcal: 152,
+    unit: 'kcal/serving',
+    price: 349,
+  },
+  {
+    id: 'muesli750',
+    kind: 'grocery',
+    name: 'No-added-sugar muesli',
+    diet: 'veg',
+    image: images.muesliBowlHero,
+    photoLabel: 'No-added-sugar muesli',
+    meta: '750 g · 2,850 kcal pack',
+    kcal: 152,
+    unit: 'kcal/serving',
+    price: 599,
+  },
+  {
+    id: 'muesli1kg',
+    kind: 'grocery',
+    name: 'No-added-sugar muesli',
+    diet: 'veg',
+    image: images.muesliBowlHero,
+    photoLabel: 'No-added-sugar muesli',
+    meta: '1 kg · 3,800 kcal pack',
+    kcal: 152,
+    unit: 'kcal/serving',
+    price: 749,
   },
   {
     id: 'blueberries',
@@ -111,7 +249,7 @@ export const PRODUCTS: Product[] = [
 ];
 
 /** Shown in "Add more" until they are in the cart. */
-export const ADD_ON_IDS = ['chaat', 'blueberries'];
+export const ADD_ON_IDS: ProductId[] = ['chaat', 'blueberries'];
 
 // Today, from the user's goal (Lose weight · 1,600 kcal, 120 g protein).
 export const DAY_TARGET = 1600;
@@ -321,6 +459,8 @@ type CartContextValue = Totals & {
 
 const CartContext = createContext<CartContextValue | null>(null);
 
+export const productById = (id: string) => PRODUCTS.find(p => p.id === id);
+
 const INITIAL_QTY: Record<string, number> = {
   paneer: 1,
   omelette: 1,
@@ -341,7 +481,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setQtyState(prev => ({ ...prev, [id]: Math.max(0, Math.min(20, q)) }));
   }, []);
   const add = useCallback((id: string) => {
-    setQtyState(prev => ({ ...prev, [id]: (prev[id] ?? 0) + 1 }));
+    setQtyState(prev => ({ ...prev, [id]: Math.min(20, (prev[id] ?? 0) + 1) }));
   }, []);
   const setLight = useCallback((id: string, on: boolean) => {
     setLightState(prev => ({ ...prev, [id]: on }));

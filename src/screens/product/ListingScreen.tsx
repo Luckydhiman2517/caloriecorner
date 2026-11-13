@@ -11,6 +11,7 @@ import {
   Tap,
   Text,
 } from '../../components';
+import type { ProductId } from '../../state/cart';
 import { useNav, type RouteName } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
@@ -35,9 +36,6 @@ export default function ListingScreen() {
   const [under500, setUnder500] = useState(true);
   const [protein20, setProtein20] = useState(false);
   const [tab, setTab] = useState<Kind>('all');
-  const [qty, setQty] = useState<Record<string, number>>(() =>
-    Object.fromEntries(RESULTS.map(r => [r.name, r.initialQty])),
-  );
 
   const kcalTone: PillTone = under500 ? 'kcal' : 'off';
   const proteinTone: PillTone = protein20 ? 'on' : 'off';
@@ -167,8 +165,7 @@ export default function ListingScreen() {
                 />
               ) : undefined
             }
-            initialQty={qty[r.name]}
-            onQtyChange={q => setQty(m => ({ ...m, [r.name]: q }))}
+            productId={r.productId}
           />
         ))}
       </View>
@@ -200,7 +197,7 @@ const RESULTS: {
   kcal: number;
   unit?: string;
   price: string;
-  initialQty: number;
+  productId: ProductId;
   best?: boolean;
 }[] = [
   {
@@ -214,7 +211,7 @@ const RESULTS: {
     kcal: 95,
     unit: 'kcal/100 g',
     price: '₹180',
-    initialQty: 1,
+    productId: 'yogurt',
     best: true,
   },
   {
@@ -227,7 +224,7 @@ const RESULTS: {
     protein: '9.2 g protein / 100 kcal',
     kcal: 260,
     price: '₹179',
-    initialQty: 1,
+    productId: 'omelette',
   },
   {
     kind: 'groceries',
@@ -240,7 +237,7 @@ const RESULTS: {
     kcal: 70,
     unit: 'kcal/egg',
     price: '₹120',
-    initialQty: 0,
+    productId: 'eggs',
   },
   {
     kind: 'meals',
@@ -252,7 +249,7 @@ const RESULTS: {
     protein: '6.7 g protein / 100 kcal',
     kcal: 420,
     price: '₹249',
-    initialQty: 1,
+    productId: 'paneer',
   },
   {
     kind: 'meals',
@@ -264,7 +261,7 @@ const RESULTS: {
     protein: '6.1 g protein / 100 kcal',
     kcal: 180,
     price: '₹149',
-    initialQty: 0,
+    productId: 'chaat',
   },
   {
     kind: 'meals',
@@ -276,7 +273,7 @@ const RESULTS: {
     protein: '4.1 g protein / 100 kcal',
     kcal: 340,
     price: '₹199',
-    initialQty: 0,
+    productId: 'berryBowl',
   },
   {
     kind: 'meals',
@@ -288,7 +285,7 @@ const RESULTS: {
     protein: '3.9 g protein / 100 kcal',
     kcal: 310,
     price: '₹169',
-    initialQty: 0,
+    productId: 'khichdi',
   },
 ];
 

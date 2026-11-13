@@ -15,6 +15,7 @@ import {
   Text,
   type BadgeTone,
 } from '../../components';
+import type { ProductId } from '../../state/cart';
 import { useNav } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
@@ -218,7 +219,7 @@ const PICKS: {
   meta: string;
   kcal: number;
   price: string;
-  initialQty: number;
+  productId: ProductId;
 }[] = [
   {
     photo: images.eggsCarton,
@@ -228,7 +229,7 @@ const PICKS: {
     meta: 'Protein Pot · Contains egg',
     kcal: 260,
     price: '₹179',
-    initialQty: 1,
+    productId: 'omelette',
   },
   {
     photo: 'warm',
@@ -238,7 +239,7 @@ const PICKS: {
     meta: 'Green Fork Kitchen',
     kcal: 420,
     price: '₹249',
-    initialQty: 1,
+    productId: 'paneer',
   },
   {
     photo: 'green',
@@ -248,7 +249,7 @@ const PICKS: {
     meta: 'Millet Mama',
     kcal: 180,
     price: '₹149',
-    initialQty: 0,
+    productId: 'chaat',
   },
   {
     photo: images.berryMuesliBowl,
@@ -258,7 +259,7 @@ const PICKS: {
     meta: 'Green Fork Kitchen',
     kcal: 340,
     price: '₹199',
-    initialQty: 0,
+    productId: 'berryBowl',
   },
 ];
 

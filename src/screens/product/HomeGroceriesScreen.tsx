@@ -9,6 +9,7 @@ import {
   Tap,
   Text,
 } from '../../components';
+import type { ProductId } from '../../state/cart';
 import { useNav } from '../../navigation/types';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
@@ -153,7 +154,7 @@ const PRODUCTS: {
   kcal: number;
   unit: string;
   price: string;
-  initialQty: number;
+  productId: ProductId;
 }[] = [
   {
     photo: images.greekYogurtThumb,
@@ -164,7 +165,7 @@ const PRODUCTS: {
     kcal: 95,
     unit: 'kcal/100 g',
     price: '₹180',
-    initialQty: 1,
+    productId: 'yogurt',
   },
   {
     photo: images.eggsThumb,
@@ -175,7 +176,7 @@ const PRODUCTS: {
     kcal: 70,
     unit: 'kcal/egg',
     price: '₹120',
-    initialQty: 0,
+    productId: 'eggs',
   },
   {
     photo: images.moongSproutsThumb,
@@ -186,7 +187,7 @@ const PRODUCTS: {
     kcal: 60,
     unit: 'kcal/100 g',
     price: '₹45',
-    initialQty: 0,
+    productId: 'sprouts',
   },
   {
     photo: images.muesliBowlHero,
@@ -197,7 +198,7 @@ const PRODUCTS: {
     kcal: 152,
     unit: 'kcal/serving',
     price: '₹349',
-    initialQty: 0,
+    productId: 'muesli',
   },
   {
     photo: images.blueberriesThumb,
@@ -208,7 +209,7 @@ const PRODUCTS: {
     kcal: 57,
     unit: 'kcal/100 g',
     price: '₹299',
-    initialQty: 0,
+    productId: 'blueberries',
   },
 ];
 

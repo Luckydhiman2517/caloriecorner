@@ -19,6 +19,7 @@ import {
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import {
+  AddButton,
   AddOrStepper,
   Badge,
   CartBar,
@@ -34,7 +35,13 @@ import {
   type IconName,
 } from '../../components';
 import { useNav, type RouteName } from '../../navigation/types';
-import { groupDigits, inr, plural, useCart } from '../../state/cart';
+import {
+  groupDigits,
+  inr,
+  plural,
+  useCart,
+  type ProductId,
+} from '../../state/cart';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { em, type } from '../../theme/type';
@@ -345,19 +352,57 @@ export function AddOrStepperWide({
     onChange?.(next);
   };
   if (qty === 0) {
-    return (
-      <Tap
-        accessibilityLabel={`Add ${name}`}
-        onPress={() => update(1)}
-        style={styles.addHit}
-      >
-        <View style={[styles.add, { minWidth }]}>
-          <Text style={styles.addText}>ADD</Text>
-        </View>
-      </Tap>
-    );
+    return <WideAdd name={name} minWidth={minWidth} onPress={() => update(1)} />;
   }
   return <Stepper qty={qty} onChange={update} name={name} />;
+}
+
+function WideAdd({
+  name,
+  minWidth,
+  onPress,
+}: {
+  name: string;
+  minWidth: number;
+  onPress: () => void;
+}) {
+  return (
+    <Tap accessibilityLabel={`Add ${name}`} onPress={onPress} style={styles.addHit}>
+      <View style={[styles.add, { minWidth }]}>
+        <Text style={styles.addText}>ADD</Text>
+      </View>
+    </Tap>
+  );
+}
+
+/* ───────────── ADD / stepper bound to the cart ───────────── */
+
+/**
+ * ADD → stepper showing the cart's quantity of `productId`. Every card,
+ * row and detail screen showing the same product stays in step, and the
+ * cart bar updates as it changes.
+ */
+export function CartQty({
+  productId,
+  name,
+  wide = false,
+}: {
+  productId: ProductId;
+  name: string;
+  /** The kitchen menu's wider ADD (min-width 88). */
+  wide?: boolean;
+}) {
+  const cart = useCart();
+  const qty = cart.qtyOf(productId);
+  const set = (q: number) => cart.setQty(productId, q);
+  if (qty === 0) {
+    return wide ? (
+      <WideAdd name={name} minWidth={88} onPress={() => set(1)} />
+    ) : (
+      <AddButton name={name} onPress={() => set(1)} />
+    );
+  }
+  return <Stepper qty={qty} onChange={set} name={name} />;
 }
 
 /* ───────────── Meal card (200 wide, horizontal rails) ───────────── */
@@ -376,6 +421,7 @@ export function MealCard({
   meta,
   kcal,
   price,
+  productId,
   initialQty = 0,
   onQtyChange,
   onPress,
@@ -389,6 +435,8 @@ export function MealCard({
   meta: string;
   kcal: number | string;
   price: string;
+  /** Binds ADD / stepper to the cart. Without it the card counts locally. */
+  productId?: ProductId;
   initialQty?: number;
   onQtyChange?: (qty: number) => void;
   /** Defaults to opening Meal. */
@@ -421,9 +469,12 @@ export function MealCard({
       </Tap>
       <View style={styles.mealFooter}>
         <KcalPrice kcal={kcal} price={price} />
-        {action ?? (
-          <AddOrStepper initialQty={initialQty} name={name} onChange={onQtyChange} />
-        )}
+        {action ??
+          (productId ? (
+            <CartQty productId={productId} name={name} />
+          ) : (
+            <AddOrStepper initialQty={initialQty} name={name} onChange={onQtyChange} />
+          ))}
       </View>
     </View>
   );
@@ -445,6 +496,7 @@ export function ProductRow({
   kcal,
   unit = 'kcal',
   price,
+  productId,
   initialQty = 0,
   onQtyChange,
   to = 'Item',
@@ -462,6 +514,8 @@ export function ProductRow({
   kcal: number | string;
   unit?: string;
   price: string;
+  /** Binds ADD / stepper to the cart. Without it the row counts locally. */
+  productId?: ProductId;
   initialQty?: number;
   onQtyChange?: (qty: number) => void;
   /** Screen the row opens (Item for groceries, Meal for meals). */
@@ -495,9 +549,12 @@ export function ProductRow({
         </View>
       </Tap>
       <View style={styles.productAction}>
-        {action ?? (
-          <AddOrStepper initialQty={initialQty} name={name} onChange={onQtyChange} />
-        )}
+        {action ??
+          (productId ? (
+            <CartQty productId={productId} name={name} />
+          ) : (
+            <AddOrStepper initialQty={initialQty} name={name} onChange={onQtyChange} />
+          ))}
       </View>
     </View>
   );
@@ -518,6 +575,7 @@ export function DishRow({
   kcal,
   price,
   protein,
+  productId,
   initialQty = 0,
   onQtyChange,
   onPress,
@@ -530,6 +588,8 @@ export function DishRow({
   kcal: number | string;
   price: string;
   protein: string;
+  /** Binds ADD / stepper to the cart. Without it the row counts locally. */
+  productId?: ProductId;
   initialQty?: number;
   onQtyChange?: (qty: number) => void;
   /** Defaults to opening Meal. */
@@ -561,9 +621,12 @@ export function DishRow({
         </View>
       </Tap>
       <View style={styles.dishAction}>
-        {action ?? (
-          <AddOrStepperWide initialQty={initialQty} name={name} onChange={onQtyChange} />
-        )}
+        {action ??
+          (productId ? (
+            <CartQty productId={productId} name={name} wide />
+          ) : (
+            <AddOrStepperWide initialQty={initialQty} name={name} onChange={onQtyChange} />
+          ))}
       </View>
     </View>
   );

@@ -10,10 +10,12 @@ import {
   Kcal,
   Screen,
   Span,
+  Stepper,
   Tap,
   Text,
 } from '../../components';
 import { useNav } from '../../navigation/types';
+import { useCart } from '../../state/cart';
 import { colors } from '../../theme/colors';
 import { ff } from '../../theme/fonts';
 import { em, type } from '../../theme/type';
@@ -26,10 +28,14 @@ import {
   SectionTitle,
 } from './detailParts';
 
+/** Each pack size is its own product in the cart (`id`). */
 const PACKS = [
-  { value: '400g', label: '400 g', kcal: '1,520', price: '₹349', servings: '≈10 servings' },
-  { value: '750g', label: '750 g', kcal: '2,850', price: '₹599', servings: '≈19 servings' },
-  { value: '1kg', label: '1 kg', kcal: '3,800', price: '₹749', servings: '≈25 servings' },
+  { value: '400g', id: 'muesli', label: '400 g', kcal: '1,520', price: '₹349',
+    servings: '≈10 servings' },
+  { value: '750g', id: 'muesli750', label: '750 g', kcal: '2,850', price: '₹599',
+    servings: '≈19 servings' },
+  { value: '1kg', id: 'muesli1kg', label: '1 kg', kcal: '3,800', price: '₹749',
+    servings: '≈25 servings' },
 ] as const;
 
 type Pack = (typeof PACKS)[number]['value'];
@@ -121,21 +127,39 @@ export default function ItemScreen() {
   const nav = useNav();
   const insets = useSafeAreaInsets();
   const [pack, setPack] = useState<Pack>('400g');
+  const cart = useCart();
+  const { id: packId, price: packPrice } =
+    PACKS.find(p => p.value === pack) ?? PACKS[0];
+  const inCart = cart.qtyOf(packId);
 
   return (
     <Screen
       bottomGap={0}
       footer={
         <BottomBar>
-          <AddBarButton
-            label="Add"
-            labelSize={16}
-            kcal="152"
-            unit="kcal/serving"
-            price="₹349"
-            onPress={() => nav.navigate('Cart')}
-            style={styles.addButton}
-          />
+          <View style={styles.barRow}>
+            {inCart ? (
+              <View style={styles.inCart}>
+                <Text style={styles.inCartLabel}>In cart: {inCart}</Text>
+                <Stepper
+                  size="bar"
+                  qty={inCart}
+                  name={`No-added-sugar muesli, ${pack}`}
+                  onChange={q => cart.setQty(packId, q)}
+                />
+              </View>
+            ) : null}
+            <AddBarButton
+              // "Add another" + the per-serving unit won't fit beside the stepper.
+              label="Add"
+              labelSize={16}
+              kcal="152"
+              unit="kcal/serving"
+              price={packPrice}
+              onPress={() => cart.add(packId)}
+              style={[styles.addButton, inCart ? styles.addNarrow : null]}
+            />
+          </View>
         </BottomBar>
       }
     >
@@ -516,5 +540,9 @@ const styles = StyleSheet.create({
   pairingMeta: { marginTop: 2, fontSize: 12, lineHeight: 16, color: colors.ink3 },
   pairingNumbers: { marginTop: 8, flexDirection: 'row', alignItems: 'baseline', gap: 8 },
 
-  addButton: { paddingHorizontal: 16 },
+  addButton: { flex: 1, minWidth: 0, paddingHorizontal: 16 },
+  addNarrow: { paddingHorizontal: 10 },
+  barRow: { flexDirection: 'row', alignItems: 'flex-end', gap: 8 },
+  inCart: { gap: 4 },
+  inCartLabel: { ...ff('body', 600), fontSize: 12, lineHeight: 16, color: colors.ink3 },
 });
